@@ -1,5 +1,7 @@
 package net.ausiasmarch.wejeta.entity;
 
+import java.util.List;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -26,9 +28,10 @@ public class TipousuarioEntity {
     private String descripcion;
 
     @OneToMany(mappedBy = "tipousuario", fetch = FetchType.LAZY)
-    private java.util.List<UsuarioEntity> usuarios;
-
+    private List<UsuarioEntity> usuarios;
+    
     public int getUsuarios() {
-        return usuarios.size();
+        return (usuarios != null) ? usuarios.size() : 0;
     }
+    
 }
