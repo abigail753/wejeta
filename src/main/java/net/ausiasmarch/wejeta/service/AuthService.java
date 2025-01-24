@@ -72,5 +72,9 @@ public class AuthService {
         return this.isContable() && oUsuarioEntity.getId() == id;
     }
 
+    public boolean isAuditorWithItsOwnData(Long id) {
+        UsuarioEntity oUsuarioEntity = this.getUsuarioFromToken();
+        return this.isAuditor() && oUsuarioEntity.getId() == id;
+    }
 
 }

@@ -13,6 +13,7 @@ import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+
 @Service
 @AllArgsConstructor
 public class UsuarioService {
@@ -30,24 +31,28 @@ public class UsuarioService {
             return "Bienvenido a la zona restringida";
         }
     }
-    
+
     // public UsuarioEntity get(Long id){
-    //     if (oAuthService.isContableWithItsOwnData(id) || oAuthService.isAdmin()) {
-    //         return oUsuarioRepository.findById(id).get();
-    //     } else {
-    //         throw new UnauthorizedAccessException("No tienes permisos para acceder a esta zona");
-    //     }        
+    // if (oAuthService.isContableWithItsOwnData(id) || oAuthService.isAdmin()) {
+    // return oUsuarioRepository.findById(id).get();
+    // } else {
+    // throw new UnauthorizedAccessException("No tienes permisos para acceder a esta
+    // zona");
+    // }
     // }
 
     public UsuarioEntity get(Long id) {
-    Optional<UsuarioEntity> usuario = oUsuarioRepository.findById(id);
-    if (usuario.isPresent()) {
-        return usuario.get();
-    } else {
-        throw new EntityNotFoundException("Usuario no encontrado con ID: " + id);
+        if (oAuthService.isContableWithItsOwnData(id) || oAuthService.isAdmin()|| oAuthService.isAuditorWithItsOwnData(id)) {
+            Optional<UsuarioEntity> usuario = oUsuarioRepository.findById(id);
+            if (usuario.isPresent()) {
+                return usuario.get();
+            } else {
+                throw new EntityNotFoundException("Usuario no encontrado con ID: " + id);
+            }
+        } else {
+            throw new UnauthorizedAccessException("No tienes permisos para ver el usuario");
+        }
     }
-    }
-
 
     public Page<UsuarioEntity> getPage(Pageable oPageable, Optional<String> filter) {
 
@@ -60,6 +65,7 @@ public class UsuarioService {
             return oUsuarioRepository.findAll(oPageable);
         }
     }
+
     public Long count() {
         return oUsuarioRepository.count();
     }
