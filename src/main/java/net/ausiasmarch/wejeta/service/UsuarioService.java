@@ -51,49 +51,74 @@ public class UsuarioService {
     }
 
     public Page<UsuarioEntity> getPage(Pageable oPageable, Optional<String> filter) {
-
-        if (filter.isPresent()) {
-            return oUsuarioRepository
-                    .findByNombreContainingOrApellido1ContainingOrApellido2ContainingOrEmailContaining(
-                            filter.get(), filter.get(), filter.get(), filter.get(),
-                            oPageable);
+        if (oAuthService.isAdmin()) {
+            if (filter.isPresent()) {
+                return oUsuarioRepository
+                        .findByNombreContainingOrApellido1ContainingOrApellido2ContainingOrEmailContaining(
+                                filter.get(), filter.get(), filter.get(), filter.get(),
+                                oPageable);
+            } else {
+                return oUsuarioRepository.findAll(oPageable);
+            }
         } else {
-            return oUsuarioRepository.findAll(oPageable);
+            throw new UnauthorizedAccessException("No tienes permisos para ver los usuarios");
         }
+
     }
 
     public Long count() {
-        return oUsuarioRepository.count();
+        if (!oAuthService.isAdmin()) {
+            throw new UnauthorizedAccessException("No tienes permisos para contar los usuarios");
+        } else {
+            return oUsuarioRepository.count();
+        }
     }
 
     public Long delete(Long id) {
-        oUsuarioRepository.deleteById(id);
-        return 1L;
+        if (oAuthService.isAdmin()) {
+            oUsuarioRepository.deleteById(id);
+            return 1L;
+        } else {
+            throw new UnauthorizedAccessException("No tienes permisos para borrar el usuario");
+        }
     }
 
     public UsuarioEntity create(UsuarioEntity oUsuarioEntity) {
-        return oUsuarioRepository.save(oUsuarioEntity);
+        if (oAuthService.isAdmin()) {
+            return oUsuarioRepository.save(oUsuarioEntity);
+        } else {
+            throw new UnauthorizedAccessException("No tienes permisos para crear el usuario");
+        }
     }
 
     public UsuarioEntity update(UsuarioEntity oUsuarioEntity) {
-        UsuarioEntity oUsuarioEntityFromDatabase = oUsuarioRepository.findById(oUsuarioEntity.getId()).get();
-        if (oUsuarioEntity.getNombre() != null) {
-            oUsuarioEntityFromDatabase.setNombre(oUsuarioEntity.getNombre());
+        if (oAuthService.isContableWithItsOwnData(oUsuarioEntity.getId()) || oAuthService.isAdmin()
+                || oAuthService.isAuditorWithItsOwnData(oUsuarioEntity.getId())) {
+            UsuarioEntity oUsuarioEntityFromDatabase = oUsuarioRepository.findById(oUsuarioEntity.getId()).get();
+            if (oUsuarioEntity.getNombre() != null) {
+                oUsuarioEntityFromDatabase.setNombre(oUsuarioEntity.getNombre());
+            }
+            if (oUsuarioEntity.getApellido1() != null) {
+                oUsuarioEntityFromDatabase.setApellido1(oUsuarioEntity.getApellido1());
+            }
+            if (oUsuarioEntity.getApellido2() != null) {
+                oUsuarioEntityFromDatabase.setApellido2(oUsuarioEntity.getApellido2());
+            }
+            if (oUsuarioEntity.getEmail() != null) {
+                oUsuarioEntityFromDatabase.setEmail(oUsuarioEntity.getEmail());
+            }
+            return oUsuarioRepository.save(oUsuarioEntityFromDatabase);
+        } else {
+            throw new UnauthorizedAccessException("No tienes permisos para modificar el usuario");
         }
-        if (oUsuarioEntity.getApellido1() != null) {
-            oUsuarioEntityFromDatabase.setApellido1(oUsuarioEntity.getApellido1());
-        }
-        if (oUsuarioEntity.getApellido2() != null) {
-            oUsuarioEntityFromDatabase.setApellido2(oUsuarioEntity.getApellido2());
-        }
-        if (oUsuarioEntity.getEmail() != null) {
-            oUsuarioEntityFromDatabase.setEmail(oUsuarioEntity.getEmail());
-        }
-        return oUsuarioRepository.save(oUsuarioEntityFromDatabase);
     }
 
     public Long deleteAll() {
-        oUsuarioRepository.deleteAll();
-        return this.count();
+        if (!oAuthService.isAdmin()) {
+            throw new UnauthorizedAccessException("No tienes permisos para borrar todos los usuarios");
+        } else {
+            oUsuarioRepository.deleteAll();
+            return this.count();
+        }
     }
 }
