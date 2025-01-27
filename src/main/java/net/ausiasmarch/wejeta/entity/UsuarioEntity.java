@@ -1,5 +1,7 @@
 package net.ausiasmarch.wejeta.entity;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -43,6 +45,7 @@ public class UsuarioEntity {
     @Email
     private String email;
     
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
 
     @ManyToOne(fetch = jakarta.persistence.FetchType.EAGER)
