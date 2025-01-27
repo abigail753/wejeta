@@ -6,6 +6,7 @@ import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
 import net.ausiasmarch.wejeta.entity.UsuarioEntity;
+import net.ausiasmarch.wejeta.exception.ResourceNotFoundException;
 import net.ausiasmarch.wejeta.exception.UnauthorizedAccessException;
 import net.ausiasmarch.wejeta.repository.UsuarioRepository;
 
@@ -24,25 +25,14 @@ public class UsuarioService {
 
     AuthService oAuthService;
 
-    public String RestrictedArea() {
-        if (oHttpServletRequest.getAttribute("email") == null) {
-            return "No tienes permisos para acceder a esta zona";
-        } else {
-            return "Bienvenido a la zona restringida";
-        }
+    public UsuarioEntity getByEmail(String email) {
+        return oUsuarioRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("El usuario con email " + email + " no existe"));
     }
 
-    // public UsuarioEntity get(Long id){
-    // if (oAuthService.isContableWithItsOwnData(id) || oAuthService.isAdmin()) {
-    // return oUsuarioRepository.findById(id).get();
-    // } else {
-    // throw new UnauthorizedAccessException("No tienes permisos para acceder a esta
-    // zona");
-    // }
-    // }
-
     public UsuarioEntity get(Long id) {
-        if (oAuthService.isContableWithItsOwnData(id) || oAuthService.isAdmin()|| oAuthService.isAuditorWithItsOwnData(id)) {
+        if (oAuthService.isContableWithItsOwnData(id) || oAuthService.isAdmin()
+                || oAuthService.isAuditorWithItsOwnData(id)) {
             Optional<UsuarioEntity> usuario = oUsuarioRepository.findById(id);
             if (usuario.isPresent()) {
                 return usuario.get();

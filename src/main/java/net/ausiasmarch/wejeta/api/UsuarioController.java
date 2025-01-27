@@ -31,9 +31,9 @@ public class UsuarioController {
     @Autowired
     UsuarioService oUsuarioService;
 
-    @GetMapping("/restricted")
-    public ResponseEntity<String> restricted() {
-        return ResponseEntity.ok("\"" + oUsuarioService.RestrictedArea() + "\"");
+    @GetMapping("/byemail/{email}")
+    public ResponseEntity<UsuarioEntity> getUsuarioByEmail(@PathVariable(value = "email") String email) {
+        return ResponseEntity.ok(oUsuarioService.getByEmail(email));
     }
 
     @GetMapping("/{id}")
@@ -41,8 +41,7 @@ public class UsuarioController {
         return ResponseEntity.ok(oUsuarioService.get(id));
     }
 
-
-     @GetMapping("")
+    @GetMapping("")
     public ResponseEntity<Page<UsuarioEntity>> getPage(
             Pageable oPageable,
             @RequestParam  Optional<String> filter) {
