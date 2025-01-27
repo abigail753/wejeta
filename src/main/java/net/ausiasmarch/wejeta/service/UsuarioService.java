@@ -26,8 +26,14 @@ public class UsuarioService {
     AuthService oAuthService;
 
     public UsuarioEntity getByEmail(String email) {
-        return oUsuarioRepository.findByEmail(email)
+        UsuarioEntity oUsuarioEntity = oUsuarioRepository.findByEmail(email)
                 .orElseThrow(() -> new ResourceNotFoundException("El usuario con email " + email + " no existe"));
+        if (oAuthService.isContableWithItsOwnData(oUsuarioEntity.getId()) || oAuthService.isAdmin()
+                || oAuthService.isAuditorWithItsOwnData(oUsuarioEntity.getId())) {
+            return oUsuarioEntity;
+        } else {
+            throw new UnauthorizedAccessException("No tienes permisos para ver el usuario");
+        }
     }
 
     public UsuarioEntity get(Long id) {

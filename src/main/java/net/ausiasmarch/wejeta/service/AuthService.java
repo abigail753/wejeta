@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import jakarta.servlet.http.HttpServletRequest;
 import net.ausiasmarch.wejeta.bean.LogindataBean;
 import net.ausiasmarch.wejeta.entity.UsuarioEntity;
+import net.ausiasmarch.wejeta.exception.UnauthorizedAccessException;
 import net.ausiasmarch.wejeta.repository.UsuarioRepository;
 
 @Service
@@ -43,8 +44,12 @@ public class AuthService {
     }
 
     public UsuarioEntity getUsuarioFromToken() {
-        String email = oHttpServletRequest.getAttribute("email").toString();
-        return oUsuarioRepository.findByEmail(email).get();
+        if (oHttpServletRequest.getAttribute("email") == null) {
+            throw new UnauthorizedAccessException("No hay usuario en la sesión");
+        } else {
+            String email = oHttpServletRequest.getAttribute("email").toString();
+            return oUsuarioRepository.findByEmail(email).get();
+        }                
     }
 
     public boolean isSessionActive() {
