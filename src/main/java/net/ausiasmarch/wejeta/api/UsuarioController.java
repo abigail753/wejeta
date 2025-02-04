@@ -31,13 +31,8 @@ public class UsuarioController {
     @Autowired
     UsuarioService oUsuarioService;
 
-    @GetMapping("/byemail/{email}")
-    public ResponseEntity<UsuarioEntity> getUsuarioByEmail(@PathVariable(value = "email") String email) {
-        return ResponseEntity.ok(oUsuarioService.getByEmail(email));
-    }
-
     @GetMapping("/{id}")
-    public ResponseEntity<UsuarioEntity> getUsuarioById(@PathVariable(value = "id") Long id) {
+    public ResponseEntity<UsuarioEntity> findById(@PathVariable(value = "id") Long id) {
         return ResponseEntity.ok(oUsuarioService.get(id));
     }
 
@@ -61,14 +56,9 @@ public class UsuarioController {
 
     @PostMapping("/new")
     public ResponseEntity<UsuarioEntity> createUsuario(@RequestBody UsuarioEntity usuario) {
-        if (usuario.getTipousuario() == null) {
-            return ResponseEntity.badRequest().body(null);
-        }
         UsuarioEntity savedUsuario = oUsuarioService.create(usuario);
         return ResponseEntity.ok(savedUsuario);
     }
-    
-    
 
     @PutMapping("")
     public ResponseEntity<UsuarioEntity> update(@RequestBody UsuarioEntity oUsuarioEntity) {

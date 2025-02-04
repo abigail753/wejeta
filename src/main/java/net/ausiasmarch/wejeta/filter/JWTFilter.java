@@ -13,6 +13,7 @@ import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import net.ausiasmarch.wejeta.service.JWTService;
+import java.util.Map;
 
 @Component
 public class JWTFilter implements Filter {
@@ -32,30 +33,35 @@ public class JWTFilter implements Filter {
         if ("OPTIONS".equals(oHttpServletRequest.getMethod())) {
             oHttpServletResponse.setStatus(HttpServletResponse.SC_OK);
             oFilterChain.doFilter(oServletRequest, oServletReponse);
+
         } else {
+
             String sToken = oHttpServletRequest.getHeader("Authorization");
+
             if (sToken == null) {
-                // oHttpServletResponse.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Token no
-                // válido");
-                // return;
                 oFilterChain.doFilter(oServletRequest, oServletReponse);
+
             } else {
-                if (!sToken.startsWith("Bearer ")) {
-                    oHttpServletResponse.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Token no válido");
-                    return;
-                } else {
-                    String sTokenReal = sToken.substring(7);
 
-                    String email = JWTHelper.validateToken(sTokenReal);
+                if (!sToken.contains(sToken))
 
-                    if (email == null) {
+                    if (!sToken.startsWith("Bearer ")) {
                         oHttpServletResponse.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Token no válido");
                         return;
                     } else {
-                        oHttpServletRequest.setAttribute("email", email);
-                        oFilterChain.doFilter(oServletRequest, oServletReponse);
+                        String sTokenReal = sToken.substring(7);
+
+                        Map<String, Object> userInfo = JWTHelper.validateToken(sTokenReal);
+
+                        if (userInfo == null) {
+                            oHttpServletResponse.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Token no válido");
+                            return;
+                        } else {
+                            oHttpServletRequest.setAttribute("userInfo", userInfo);
+                            oFilterChain.doFilter(oServletRequest, oServletReponse);
+                        }
+
                     }
-                }
 
             }
 

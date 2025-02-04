@@ -1,6 +1,7 @@
 package net.ausiasmarch.wejeta.service;
 
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import javax.crypto.SecretKey;
@@ -17,16 +18,22 @@ public class JWTService {
 
     @Value("${jwt.subject}")
     private String SUBJECT;
+
     @Value("${jwt.issuer}")
     private String ISSUER;
+
     @Value("${jwt.secret}")
     private String secretKey;
 
-    private SecretKey getSecretKey() {    
+    private SecretKey getSecretKey() {
         return Keys.hmacShaKeyFor(secretKey.getBytes());
     }
 
-    public String generateToken(Map<String, String> claims) {
+    public String generateToken(Map<String, Object> claims) {
+
+        claims.put("id", claims.get("id"));
+        claims.put("fullName", claims.get("fullName"));
+
         return Jwts.builder()
                 .id(UUID.randomUUID().toString())
                 .claims(claims)
@@ -39,10 +46,16 @@ public class JWTService {
     }
 
     private Claims getAllClaimsFromToken(String token) {
-        return Jwts.parser().verifyWith(getSecretKey()).build().parseSignedClaims(token).getPayload();
+        return Jwts.parser()
+                .verifyWith(getSecretKey())
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
+
     }
 
-    public String validateToken(String sToken) {
+    public Map<String, Object> validateToken(String sToken) {
+
         Claims oClaims = getAllClaimsFromToken(sToken);
 
         if (oClaims.getExpiration().before(new Date())) {
@@ -51,7 +64,7 @@ public class JWTService {
 
         if (oClaims.getIssuedAt().after(new Date())) {
             return null;
-        }        
+        }
 
         if (!oClaims.getIssuer().equals(ISSUER)) {
             return null;
@@ -60,8 +73,12 @@ public class JWTService {
         if (!oClaims.getSubject().equals(SUBJECT)) {
             return null;
         }
-        
-        return oClaims.get("email", String.class);
+
+        Map<String, Object> userInfo = new HashMap<>();
+        userInfo.put("id", oClaims.get("id", String.class));
+        userInfo.put("fullName", oClaims.get("fullName", String.class));
+
+        return userInfo;
 
     }
 
